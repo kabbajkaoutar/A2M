@@ -25,17 +25,21 @@ Pour obtenir une copie locale opérationnelle, suivez ces étapes :
    cd <répertoire-du-projet>
 
 3. Installer les dépendances :
+
  ```bash
 composer install
 
 4. Créer un fichier .env :
+
  ```bash
 cp .env.dist .env
 
 5. Générer la clé secrète de l'application :
+
 ```bash
 php bin/console secrets:generate-keys
 6. Configurer votre base de données :
+
 - Mettez à jour le fichier .env avec vos identifiants de base de données.
 
 - Créez la base de données :
@@ -47,5 +51,6 @@ php bin/console doctrine:database:create
 php bin/console doctrine:schema:create
 
 7.Démarrer le serveur Symfony :
+
 ```bash
 symfony serve
