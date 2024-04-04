@@ -18,39 +18,35 @@ Pour obtenir une copie locale opérationnelle, suivez ces étapes :
 
    ```bash
    git clone https://github.com/kabbajkaoutar/A2M.git
-   
+
 2. Naviguer dans le répertoire du projet :
 
    ```bash
    cd A2M
-3. Installer les dépendances :
+3. Vérifier les prérequis de Symfony :
+    ```bash
+   symfony check:requirements
+Assurez-vous que tous les prérequis sont satisfaits avant de continuer.
 
- ```bash
-composer install
-
-4. Créer un fichier .env :
-
- ```bash
-cp .env.dist .env
-
-5. Générer la clé secrète de l'application :
-
-```bash
-php bin/console secrets:generate-keys
-6. Configurer votre base de données :
-
+4. Installer les dépendances:
+   ```bash
+   composer install
+5. Créer un fichier .env :
+   ```bash
+   cp .env.dist .env
+6. Générer la clé secrète de l'application:
+   ```bash
+   php bin/console secrets:generate-keys
+7. Configurer votre base de données:
 - Mettez à jour le fichier .env avec vos identifiants de base de données.
-
 - Créez la base de données :
-```bash
-php bin/console doctrine:database:create
-
+  ```bash
+  php bin/console doctrine:database:create
 - Créez le schéma de la base de données :
-```bash
-php bin/console doctrine:schema:create
+  ```bash
+  php bin/console doctrine:schema:create
+8. Start the Symfony server:
+   ```bash
+   symfony serve
 
-7.Démarrer le serveur Symfony :
-
-```bash
-symfony serve
 
