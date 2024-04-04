@@ -21,5 +21,5 @@ Pour obtenir une copie locale opérationnelle, suivez ces étapes :
    
 2. Naviguer dans le répertoire du projet :
 
- ```bash
+   ```bash
    cd A2M
