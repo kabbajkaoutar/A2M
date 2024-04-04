@@ -22,7 +22,7 @@ Pour obtenir une copie locale opérationnelle, suivez ces étapes :
 2. Naviguer dans le répertoire du projet :
 
  ```bash
-   cd <répertoire-du-projet> ```
+   cd A2M
 
 
 3. Installer les dépendances :
