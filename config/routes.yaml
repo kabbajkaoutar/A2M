@@ -1,3 +1,16 @@
 controllers:
     resource: ../src/Controller/
     type: attribute
+#api_get_articles:
+#    path: /api/chargeArticles
+#    methods: GET
+#    controller: App\Controller\ApiController::chargeArticles
+#api_logout:
+#    path: /api/logout
+#    controller: App\Controller\SecurityController::logout
+#    methods: [POST]
+
+#api_login_check:
+#    controller: App\Controller\SecurityController::login
+#    methods: POST
+#    path: /api/login_check
