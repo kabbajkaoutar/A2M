@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Controller;
-
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,14 +11,16 @@ use App\Entity\Article;
 
 class SecurityController extends AbstractController
 {
+    //cette fonction permet de recuperer l'utilisateur connecte
     #[Route('/api/login_check', name: 'api_login_check', methods: ['POST'])]
     public function login()
     {
-      $user = $this->getUser();
-      return $this->json(['user' => $user->getUsername(),
-          'roles' => $user->getRoles()]);
+        $user = $this->getUser();
+        return $this->json(['user' => $user->getUsername(),
+            'roles' => $user->getRoles()]);
     }
 
+    //cette fonction permet de se deconnecter et supprime le cookie Bearer ainsi le token n'est plus valide
     #[Route('/api/logout', name: 'api_logout', methods: ['POST'])]
     public function logout(): Response
     {
@@ -32,6 +33,7 @@ class SecurityController extends AbstractController
         return $response;
     }
 
+// cette fonction permet de recuperer les articles depuis differentes ressources
     #[Route('/api/chargeArticles', name: 'api_chargeArticles', methods: ['GET'])]
     public function chargeArticles(ArticleFetcher $articleFetcher, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -69,7 +71,8 @@ class SecurityController extends AbstractController
                 unset($cleanedArray[$key]);
                 $articles = array_merge($cleanedArray, $extractedValues);
 
-            } }
+            }
+        }
 
 
         // Convert the array of articles into an array of Article entities
@@ -90,6 +93,25 @@ class SecurityController extends AbstractController
         return new JsonResponse([
             'message' => 'Opération réussie : les articles ont été enregistrés avec succès',
             'code_http' => 200
-        ], JsonResponse::HTTP_OK);    }
+        ], JsonResponse::HTTP_OK);
+    }
+
+    #[Route('/api/listArticles', name: 'api_listArticles', methods: ['GET'])]
+
+    public function listArticles(EntityManagerInterface $entityManager)
+    {
+        // Get the repository for the Article entity
+        $repository = $entityManager->getRepository(Article::class);
+
+        // Retrieve all articles from the repository
+        $articles = $repository->findAll();
+
+        // Render the list of articles using a Twig template
+        return $this->render('article/list.html.twig', [
+            'articles' => $articles,
+        ]);
+
+    }
+
 
 }

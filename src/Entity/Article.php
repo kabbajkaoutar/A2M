@@ -10,19 +10,25 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Patch;
+use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
+
 //Appliquer directives de cache à une ressource Article, en spécifiant une durée de cache (maxAge), une durée de cache partagé (sharedMaxAge), et en marquant le cache comme public.
 #[ApiCache(maxAge: 3600, sharedMaxAge: 3600, public: true)]
 #[ApiResource(operations: [
     new Get(),
     // pour delete et patch seulement utilisateur connecte qui a le token aura le droit de les acceder pour ceci on utilise le bearerAuth creer dans OpenApiFactory
+    //Only Admin can delete an article
     new Delete(
         openapiContext: [
             'security' => [['bearerAuth' => []]]
-        ]
+        ],
+        security: "is_granted('ROLE_ADMIN')"
+
     ),
     new Patch(
         openapiContext: [
-            'security' => [['bearerAuth' => []]]
+            'security' => [['bearerAuth' => []]],
+
         ]),
     // desactiver la pagination par page
     new GetCollection(
