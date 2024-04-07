@@ -10,13 +10,11 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Patch;
+//Appliquer directives de cache à une ressource Article, en spécifiant une durée de cache (maxAge), une durée de cache partagé (sharedMaxAge), et en marquant le cache comme public.
+#[ApiCache(maxAge: 3600, sharedMaxAge: 3600, public: true)]
 #[ApiResource(operations: [
-    new Get(
-        cacheHeaders: [
-            'max_age' => 60,
-            'shared_max_age' => 120
-        ]
-    ),
+    new Get(),
+    // pour delete et patch seulement utilisateur connecte qui a le token aura le droit de les acceder pour ceci on utilise le bearerAuth creer dans OpenApiFactory
     new Delete(
         openapiContext: [
             'security' => [['bearerAuth' => []]]
@@ -26,81 +24,49 @@ use ApiPlatform\Metadata\Patch;
         openapiContext: [
             'security' => [['bearerAuth' => []]]
         ]),
-    new GetCollection( cacheHeaders: [
-        'max_age' => 60,
-        'shared_max_age' => 120
-    ])
+    // desactiver la pagination par page
+    new GetCollection(
+        paginationEnabled: false
+    )
 ])]
 
-#[ApiFilter(SearchFilter::class, properties: ['title'])]
+//#[ApiFilter(SearchFilter::class, properties: ['title'])]
 
 #[ORM\Entity]
 class Article
 {
-    #[ORM\Id, ORM\GeneratedValue(strategy: "IDENTITY")]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: "IDENTITY")]
     #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $title = null;
+    #[ORM\Column(type: "json", nullable: true)]
+    private ?array $context = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $url = null;
+    public function getContext(): ?array
+    {
+        return $this->context;
+    }
 
-    #[ORM\Column(type: Types::TEXT)]
-    private ?string $summary = null;
+    public function setContext(?array $context): void
+    {
+        $this->context = $context;
+    }
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $publishedAt = null;
+    public function __construct(?array $context = null)
+    {
+        $this->context = $context;
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function setId(?int $id): void
     {
-        return $this->title;
+        $this->id = $id;
     }
 
-    public function setTitle(string $title): static
-    {
-        $this->title = $title;
 
-        return $this;
-    }
-
-    public function getUrl(): ?string
-    {
-        return $this->url;
-    }
-
-    public function setUrl(string $url): static
-    {
-        $this->url = $url;
-
-        return $this;
-    }
-
-    public function getSummary(): ?string
-    {
-        return $this->summary;
-    }
-
-    public function setSummary(string $summary): static
-    {
-        $this->summary = $summary;
-
-        return $this;
-    }
-
-    public function getPublishedAt(): ?\DateTimeImmutable
-    {
-        return $this->publishedAt;
-    }
-
-    public function setPublishedAt(?\DateTimeImmutable $publishedAt): void
-    {
-        $this->publishedAt = $publishedAt;
-    }
 }

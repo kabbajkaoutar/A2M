@@ -31,14 +31,13 @@ class ArticleFetcher
         $rss = simplexml_load_string($content);
 
         $articles = [];
+
         foreach ($rss->channel->item as $item) {
-            $article = [
-                'title' => (string) $item->title,
-                'link' => (string) $item->link,
-                'description' => (string) $item->description,
-                'pubDate' => (string) $item->pubDate
-            ];
-            $articles[] = $article;
+            // Convert SimpleXMLElement to associative array
+            $articleData = json_decode(json_encode($item), true);
+
+            $articles[] = $articleData;
+
         }
 
         // Stocker les articles en cache avec une durée de vie de 3600 secondes (1 heure)
@@ -67,5 +66,19 @@ class ArticleFetcher
         $this->cache->save($cacheItem);
 
         return $jsonArticles;
+    }
+    public function fetchLocalArticles(string $filePath): array
+    {
+
+        if (!file_exists($filePath)) {
+            throw new \InvalidArgumentException('Le fichier spécifié n\'existe pas.');
+        }
+        $fileContent = file_get_contents($filePath);
+        $localArticles = json_decode($fileContent, true);
+
+        if (!is_array($localArticles)) {
+            throw new \RuntimeException('Le fichier local ne contient pas de données valides.');
+        }
+        return $localArticles;
     }
 }

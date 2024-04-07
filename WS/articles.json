@@ -1,0 +1,35 @@
+[
+  {
+    "title": "SpaceX Announces Plans for First Crewed Mission to Mars",
+    "content": "SpaceX, founded by Elon Musk, has announced ambitious plans to send the first crewed mission to Mars within the next decade. The mission aims to establish a sustainable human presence on the Red Planet and pave the way for future interplanetary exploration.",
+    "author": {
+      "name": "Elon Musk",
+      "company": "SpaceX",
+      "position": "CEO"
+    },
+    "published_date": "2024-04-06T08:00:00Z",
+    "tags": ["SpaceX", "Mars", "Exploration", "Interplanetary Travel"]
+  },
+  {
+    "title": "NASA's Perseverance Rover Discovers Ancient Riverbed on Mars",
+    "content": "NASA's Perseverance rover has discovered evidence of an ancient riverbed on Mars, suggesting the planet may have once had flowing water. This finding is a significant milestone in the search for signs of past life on Mars.",
+    "author": {
+      "name": "NASA",
+      "company": "NASA",
+      "position": "Administrator"
+    },
+    "published_date": "2024-04-05T10:30:00Z",
+    "tags": ["NASA", "Perseverance", "Mars", "Planetary Exploration"]
+  },
+  {
+    "title": "ESA's ExoMars Rover Completes Successful Drill Test on Mars",
+    "content": "The European Space Agency's (ESA) ExoMars rover has successfully completed a drill test on the Martian surface, collecting samples for analysis. This achievement brings scientists closer to understanding the geological composition of Mars.",
+    "author": {
+      "name": "ESA",
+      "company": "ESA",
+      "position": "Director General"
+    },
+    "published_date": "2024-04-04T14:15:00Z",
+    "tags": ["ESA", "ExoMars", "Mars", "Space Exploration"]
+  }
+]
