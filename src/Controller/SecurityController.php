@@ -10,10 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Service\ArticleFetcher;
 use App\Repository\ArticleRepository;
 use App\Entity\Article;
-use Omines\DataTablesBundle\Adapter\Doctrine\ORMAdapter;
-use Omines\DataTablesBundle\Column\TextColumn;
-use Omines\DataTablesBundle\Column\TwigColumn;
-use Omines\DataTablesBundle\DataTableFactory;
+use Symfony\Component\HttpFoundation\Cookie;
+
 
 class SecurityController extends AbstractController
 {
@@ -21,9 +19,9 @@ class SecurityController extends AbstractController
     #[Route('/api/login_check', name: 'api_login_check', methods: ['POST'])]
     public function login()
     {
-        $user = $this->getUser();
-        return $this->json(['user' => $user->getUsername(),
-            'roles' => $user->getRoles()]);
+        return $this->json([
+            'user' => $this->getUser(),
+        ]);
     }
 
     //cette fonction permet de se deconnecter et supprime le cookie Bearer ainsi le token n'est plus valide

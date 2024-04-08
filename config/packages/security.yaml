@@ -13,6 +13,7 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+
 #        main:
 #            lazy: true
 #            provider: app_user_provider
@@ -43,8 +44,8 @@ security:
 
 
     access_control:
-#        - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
-#        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
+        - { path: ^/api/articles/[0-9]+, roles: ROLE_ADMIN }
 
 #        - path: ^/api/articles$
 #          methods: GET

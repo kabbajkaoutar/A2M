@@ -18,18 +18,16 @@ class OpenApiFactory implements OpenApiFactoryInterface
     public function __invoke(array $context = []): \ApiPlatform\OpenApi\OpenApi
     {
         $openApi = $this->decorated->__invoke($context);
-        foreach ($openApi->getPaths()->getPaths() as $key => $pathItem) {
-            if ($pathItem->getGet() && $pathItem->getGet()->getSummary() === 'hidden') {
-                $openApi->getPaths()->addPath($key, $pathItem->withGet(null));
-            }
-        }
-
         $schema = $openApi->getComponents()->getSecuritySchemes();
         $schema['bearerAuth'] = new \ArrayObject([
             'type' => 'http',
             'scheme' => 'bearer',
             'bearerFormat' => 'JWT',
+            'description' => 'A JWT token is required to access this API. JWT token should be passed in `Authorization` header with value `Bearer <JWT_TOKEN>` format.',
+            'in' => 'header',
+            'name' => 'Authorization'
         ]);
+
 
         ## This will display a customize end point for authentification which include login and logout
         /*
@@ -90,13 +88,6 @@ class OpenApiFactory implements OpenApiFactoryInterface
         $openApi->getPaths()->addPath('/api/chargeArticles', $pathItem);
 
 
-
-
-
-
-
-
-
         $pathItem = new PathItem(
             post: new Operation(
                 operationId: 'api_logout',
@@ -108,11 +99,11 @@ class OpenApiFactory implements OpenApiFactoryInterface
                         'content' => [
                             'application/json' => [
                                 'schema' => [
-                                    '$ref' => '#/components/schemas/User-read.User'
+                                    '$ref' => '#/components/schemas/User'
                                 ]
                             ]
                         ]
-                        ]
+                    ]
                 ]
 
             ),

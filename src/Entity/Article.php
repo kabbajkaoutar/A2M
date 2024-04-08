@@ -27,9 +27,11 @@ use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
     ),
     new Patch(
         openapiContext: [
-            'security' => [['bearerAuth' => []]],
+            'security' => [['bearerAuth' => []]]
+        ],
+         security: "is_granted('ROLE_ADMIN')"
 
-        ]),
+    ),
     // desactiver la pagination par page
     new GetCollection(
         paginationEnabled: false
