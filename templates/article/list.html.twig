@@ -1,59 +1,66 @@
 {% extends 'base.html.twig' %}
 
+{% block stylesheets %}
+    {# Include DataTables CSS #}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
 {% block body %}
     <h1 class="text-3xl font-bold mb-4" style="text-align: center;">Liste des articles</h1>
     <div class="container mx-auto">
         <div class="overflow-x-auto">
-            <table class="table table-hover">
+            <table id="articles-table" class="table table-hover">
                 <thead>
                 <tr>
                     <th>ID</th>
                     <th>Contenu du Contexte</th>
                 </tr>
                 </thead>
-                <tbody>
-                {% for article in articles %}
-                    <tr>
-                        <td>{{ article.id }}</td>
-                        <td>
-
-                            {# je Vérifier que si `context` est un tableau ou doit être décodé en tant que tel #}
-                            {% if article.context is iterable %}
-                                {% set context = article.context %}
-                            {% else %}
-                                {# Je m assure que `article.context` est une chaîne JSON valide avant de décoder #}
-                                {% set context = article.context|json_decode %}
-                            {% endif %}
-                            <div class="article">
-
-                                {# Parcourir `context` qui est maintenant un tableau #}
-                                {% for key, value in context %}
-                                    <div class="article">
-
-                                        {# Afficher la clé et la valeur #}
-                                        <strong>{{ key }}:</strong> {{ value|json_encode }}
-                                    </div>
-                                {% endfor %}
-
-                            </div>
-
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
             </table>
-
-            {% if paginator.pageCount > 1 %}
-                <nav aria-label="Pagination">
-                    <ul class="pagination justify-content-center">
-                        {% for page in paginator.getIterator() %}
-                            <li class="page-item {% if page == paginator.currentPage %}active{% endif %}">
-                                <a class="page-link" href="{{ path('article_list', {'page': page}) }}">{{ page }}</a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </nav>
-            {% endif %}
         </div>
     </div>
 {% endblock %}
+
+{% block javascripts %}
+    {# Include jQuery and DataTables JavaScript #}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+    {# Include DatatablesBundle JavaScript #}
+
+    <script>
+        $(document).ready(function() {
+            $('#articles-table').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ordering": false,
+                "searching": false,
+                "ajax": {
+                    "url": "{{ path('api_listArticles') }}",
+                    "type": "POST",
+                    "contentType": "application/json",
+                    "data": function ( d ) {
+                        // Add your POST data here
+
+                    }
+                },
+                "columns": [
+                    { "data": "id" },
+                    {
+                        "data": "context",
+                        "render": function(data) {
+                            let html = '';
+                            for (const [key, value] of Object.entries(data)) {
+                                html += `<div><strong>${key}:</strong> ${value}</div>`;
+                            }
+                            return html;
+                        }
+                    }
+                ]
+            });
+        });
+
+    </script>
+{% endblock %}
+

@@ -1,6 +1,8 @@
 controllers:
     resource: ../src/Controller/
     type: attribute
+
+
 #api_get_articles:
 #    path: /api/chargeArticles
 #    methods: GET

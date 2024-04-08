@@ -2,12 +2,18 @@
 
 namespace App\Controller;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use App\Service\ArticleFetcher;
+use App\Repository\ArticleRepository;
 use App\Entity\Article;
+use Omines\DataTablesBundle\Adapter\Doctrine\ORMAdapter;
+use Omines\DataTablesBundle\Column\TextColumn;
+use Omines\DataTablesBundle\Column\TwigColumn;
+use Omines\DataTablesBundle\DataTableFactory;
 
 class SecurityController extends AbstractController
 {
@@ -64,7 +70,7 @@ class SecurityController extends AbstractController
             return is_array($item);
 
         });
-
+       // Exclude the string keys from the array
         foreach ($cleanedArray as $key => $value) {
             if (is_string($key)) {
                 $extractedValues = $cleanedArray[$key];
@@ -96,22 +102,39 @@ class SecurityController extends AbstractController
         ], JsonResponse::HTTP_OK);
     }
 
-    #[Route('/api/listArticles', name: 'api_listArticles', methods: ['GET'])]
 
-    public function listArticles(EntityManagerInterface $entityManager)
+    #[Route('/articles', name: 'articles_list', methods: ['GET'])]
+
+    public function list(): Response
     {
-        // Get the repository for the Article entity
-        $repository = $entityManager->getRepository(Article::class);
-
-        // Retrieve all articles from the repository
-        $articles = $repository->findAll();
-
-        // Render the list of articles using a Twig template
-        return $this->render('article/list.html.twig', [
-            'articles' => $articles,
-        ]);
-
+        return $this->render('article/list.html.twig');
     }
+    #[Route('/articles', name: 'articles_index', methods: ['GET'])]
+    public function index()
+    {
+        return $this->render('article/list.html.twig');
+    }
+
+
+    #[Route('/api/listArticles', name: 'api_listArticles', methods: ['POST'])]
+    public function listArticles(Request $request, ArticleRepository $articleRepository):JsonResponse
+    {
+        // Fetch data from the repository
+        $articles = $articleRepository->findAll();
+
+        // Prepare the response data in DataTables format
+        $data = [];
+        foreach ($articles as $article) {
+            $data['data'][] = [
+                'id' => $article->getId(),
+                'context' => $article->getContext(),
+                // Add more properties here if needed
+            ];
+        }
+        // Return the data as a JSON response
+        return new JsonResponse($data);
+    }
+
 
 
 }
