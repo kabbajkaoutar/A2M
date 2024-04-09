@@ -190,6 +190,7 @@ Si un jeton valide est fourni, la requête est autorisée et l'opération est ex
 - **Déconnexion**
 
   ![img_13.png](img_13.png)
+  
   Le logout permet de déconnecter l'utilisateur et supprimer le token Bearer.
 
 ### Note
