@@ -67,7 +67,6 @@ class ApiController extends AbstractController
         // Filter out non-array elements
         $cleanedArray = array_filter($articles, function ($item) {
             return is_array($item);
-
         });
        // Exclude the string keys from the array
         foreach ($cleanedArray as $key => $value) {
@@ -78,7 +77,6 @@ class ApiController extends AbstractController
 
             }
         }
-
         // **Nettoyage des articles**
         foreach ($articles as $key => &$value) {
             if (is_string($value)) {
@@ -86,26 +84,48 @@ class ApiController extends AbstractController
             }
         }
 
-
         // Convert the array of articles into an array of Article entities
-        foreach ($articles as $articleData) {
-            $article = new Article();
-            $article->setContext($articleData); // Store article data in the 'context' field
-            // Persist the Article entity
-            $entityManager->persist($article);
-        }
-        $entityManager->flush();
+        // Début de la transaction
+        $entityManager->beginTransaction();
 
-        // Check if the array of articles is empty
-        if (empty($articles)) {
-            return new JsonResponse(['message' => 'No articles found'], JsonResponse::HTTP_NOT_FOUND);
+        try {
+            foreach ($articles as $articleData) {
+                $article = new Article();
+                $article->setContext($articleData);
+                $entityManager->persist($article);
+            }
+
+            // Exécution des requêtes SQL persistées dans la transaction
+            $entityManager->flush();
+
+            // Validation de la transaction
+            $entityManager->commit();
+
+            // Vérifie si le tableau d'articles est vide
+            if (empty($articles)) {
+                return new JsonResponse(['message' => 'Aucun article trouvé'], JsonResponse::HTTP_NOT_FOUND);
+            }
+
+            // Retourne une réponse JSON en cas de succès
+            return new JsonResponse([
+                'message' => 'Opération réussie : les articles ont été enregistrés avec succès',
+                'code_http' => JsonResponse::HTTP_OK
+            ]);
+
+        } catch (\Exception $e) {
+            // En cas d'erreur, annule la transaction
+            $entityManager->rollback();
+
+            // Retourne une réponse JSON avec un message d'erreur
+            return new JsonResponse([
+                'message' => 'Une erreur est survenue lors de l\'enregistrement des articles',
+            ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        // Return a JSON response with a success message, status code 200, and code_http field
-        return new JsonResponse([
-            'message' => 'Opération réussie : les articles ont été enregistrés avec succès',
-            'code_http' => 200
-        ], JsonResponse::HTTP_OK);
+
+
+
+
     }
 
 

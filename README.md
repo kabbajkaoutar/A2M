@@ -2,6 +2,22 @@
 
 ## Introduction
 A2M est une application web Symfony qui permet de gérer des articles provenant de différentes sources (flux RSS, API JSON, fichiers locaux) et de les stocker dans une base de données. Une API REST est également disponible pour accéder aux articles.
+
+### Informations de Connexion
+Pour accéder à l'application, utilisez les points d'entrée suivants :
+
+- **URL de l'API :** [http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)
+
+Utilisez les comptes prédéfinis suivants :
+
+- **Utilisateur :**
+    - Email : user@example.com
+    - Mot de passe : password
+
+- **Administrateur :**
+    - Email : admin@example.com
+    - Mot de passe : password
+    - 
 ## Fonctionnalités
 - Récupération d'articles depuis des flux RSS et des API JSON
 - Stockage des articles dans une base de données
@@ -128,6 +144,7 @@ Vous pouvez effectuer des opérations de modification, suppression et recherche 
    {
        // Vos propriétés et méthodes de classe
    }
+   ```
 L'API REST peut être sécurisée en ajoutant des contrôles d'accès et des autorisations. Par exemple, vous pouvez configurer l'OpenAPI context pour spécifier les exigences de sécurité nécessaires à l'accès à l'API.
 
 **Contrôle de sécurité avec OpenAPI Context :**
@@ -138,6 +155,7 @@ L'API REST peut être sécurisée en ajoutant des contrôles d'accès et des aut
    openapiContext: [
        'security' => [['bearerAuth' => []]]
    ],
+   ```
 #### Implémentation de l'authentification
 
 Pour sécuriser l'accès aux données nécessitant une authentification, des jetons Web JSON (JWT) sont utilisés.
@@ -171,9 +189,8 @@ Si un jeton valide est fourni, la requête est autorisée et l'opération est ex
   ![img_3.png](img_3.png)
 - **Déconnexion**
 
-  Les utilisateurs peuvent se déconnecter en effectuant une requête POST à la section "Logout".
-  ![img_5.png](img_5.png)
-
+  ![img_13.png](img_13.png)
+  Le logout permet de déconnecter l'utilisateur et supprimer le token Bearer.
 
 ### Note
 Pour implémenter JWT, le bundle `lexik/jwt-authentication-bundle` a été utilisé dans Symfony. Assurez-vous que l'extension `ext-sodium` est activée dans votre fichier `php.ini`.
@@ -182,13 +199,13 @@ Pour générer les clés requises pour LexikJWTAuthenticationBundle, exécutez :
    ```bash
     php bin/console lexik:jwt:generate-keypair   
   ```
-## Configuration du Cache pour API Platform
+#### Configuration du Cache pour API Platform
 
 Afin d'améliorer les performances de mon API et de réduire la charge sur le serveur, j'ai intégré un système de cache pour les entités. Ci-dessous, vous trouverez un exemple de la configuration du cache pour la classe `Article` en utilisant API Platform.
 
 J'utilise l'attribut `ApiCache` pour spécifier les directives de cache HTTP qui seront appliquées aux réponses de l'API pour cette ressource. Cela permet de contrôler le cache au niveau de la réponse HTTP, rendant les données de l'API plus rapidement accessibles par les clients et en diminuant la charge sur le serveur.
 
-### Exemple de Configuration de Cache pour la Classe Article
+#### Exemple de Configuration de Cache pour la Classe Article
 
 ```php
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -201,19 +218,52 @@ class Article
     // Définition de la classe...
 }
 ```
-## Optimisation des Performances avec le Cache Symfony
+#### Optimisation des Performances avec le Cache Symfony
 
 Pour améliorer les performances de mon application, en particulier pour la gestion efficace de grandes quantités d'articles provenant de différentes sources, j'ai intégré un système de cache grâce au bundle cache de Symfony.
 
-### Utilisation du Cache dans le Service ArticleFetcher
+#### Utilisation du Cache dans le Service ArticleFetcher
 
-Le service `ArticleFetcher` joue un rôle crucial dans la récupération des articles, que ce soit via RSS ou JSON, depuis des sources distantes. Pour optimiser cette opération, j'ai mis en place un système de cache pour les méthodes `fetchRssArticles` et `fetchJsonArticles`. Voici comment cela fonctionne :
+Le service `ArticleFetcher` joue un rôle crucial dans la récupération des articles, que ce soit via RSS ou JSON, depuis des sources distantes. Pour optimiser cette opération, j'ai mis en place un système de cache pour les méthodes `fetchRssArticles` , `fetchJsonArticles` et `fetchLocalArticles` . Voici comment cela fonctionne :
 
-1. **Injection du Cache :** Le cache est injecté dans le service `ArticleFetcher`, ce qui me permet de mettre en cache les résultats des méthodes `fetchRssArticles` et `fetchJsonArticles`. 
+1. **Injection du Cache :** Le cache est injecté dans le service `ArticleFetcher`, ce qui me permet de mettre en cache les résultats des méthodes `fetchRssArticles` , `fetchJsonArticles` et `fetchLocalArticles` . 
 
 2. **Mise en Cache des Résultats :** Lorsque des articles sont récupérés pour la première fois, ils sont mis en cache. Si les mêmes articles sont demandés à nouveau, le système récupère les données directement depuis le cache au lieu de refaire une requête vers la source distante.
 
-3. **Accélération des Appels :** Grâce à cette mise en cache, les appels ultérieurs aux méthodes `fetchRssArticles` et `fetchJsonArticles` sont considérablement accélérés, car les données peuvent être récupérées directement du cache si elles y ont déjà été stockées.
+3. **Accélération des Appels :** Grâce à cette mise en cache, les appels ultérieurs aux méthodes `fetchRssArticles` , `fetchJsonArticles` et `fetchLocalArticles` sont considérablement accélérés, car les données peuvent être récupérées directement du cache si elles y ont déjà été stockées.
 
 Cela améliore significativement les performances de l'application, surtout lors de la récupération d'articles depuis des sources distantes, en réduisant le temps de réponse et la charge sur le serveur.
 En intégrant le système de cache de Symfony dans le service `ArticleFetcher`, j'ai pu optimiser les performances de mon application et offrir une meilleure expérience aux utilisateurs.
+
+### Optimisation : Utilisation de la Transaction pour les Insertions en Base de Données
+
+L'utilisation de transactions permet d'optimiser les opérations d'insertion en base de données en regroupant plusieurs requêtes SQL dans une seule transaction. Cela garantit l'intégrité des données et améliore les performances globales de l'application.
+
+**Exemple d'utilisation de transaction :**
+
+```php
+// Utiliser des transactions pour optimiser les insertions en base de données
+$entityManager->beginTransaction();
+        try {
+            foreach ($articles as $articleData) {
+                $article = new Article();
+                $article->setContext($articleData);
+                $entityManager->persist($article);
+            }
+            $entityManager->flush();
+            $entityManager->commit();
+            // Check if the array of articles is empty
+            if (empty($articles)) {
+                return new JsonResponse(['message' => 'No articles found'], JsonResponse::HTTP_NOT_FOUND);
+            }
+            return new JsonResponse([
+                'message' => 'Opération réussie : les articles ont été enregistrés avec succès',
+                'code_http' => 200
+            ], JsonResponse::HTTP_OK);
+
+        } catch (\Exception $e) {
+            $entityManager->rollback();
+            return new JsonResponse(['message' => 'Une erreur est survenue lors de l\'enregistrement des articles'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+

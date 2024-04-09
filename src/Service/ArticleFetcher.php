@@ -4,6 +4,8 @@ namespace App\Service;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+
 
 class ArticleFetcher
 {
@@ -67,18 +69,38 @@ class ArticleFetcher
 
         return $jsonArticles;
     }
+
     public function fetchLocalArticles(string $filePath): array
     {
+        // Create a cache key based on the file path
+        $cacheKey = md5($filePath);
 
+        // Retrieve the cache adapter
+        $cache = new FilesystemAdapter();
+
+        // Check if the data is cached
+        $cachedItem = $cache->getItem($cacheKey);
+        if ($cachedItem->isHit()) {
+            // Return cached data if available
+            return $cachedItem->get();
+        }
+
+        // If not cached, read the file and parse JSON
         if (!file_exists($filePath)) {
             throw new \InvalidArgumentException('Le fichier spécifié n\'existe pas.');
         }
+
         $fileContent = file_get_contents($filePath);
         $localArticles = json_decode($fileContent, true);
 
         if (!is_array($localArticles)) {
             throw new \RuntimeException('Le fichier local ne contient pas de données valides.');
         }
+
+        // Cache the parsed articles
+        $cachedItem->set($localArticles);
+        $cache->save($cachedItem);
+
         return $localArticles;
     }
 }
