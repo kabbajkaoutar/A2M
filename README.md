@@ -235,7 +235,8 @@ Le service `ArticleFetcher` joue un rôle crucial dans la récupération des art
 Cela améliore significativement les performances de l'application, surtout lors de la récupération d'articles depuis des sources distantes, en réduisant le temps de réponse et la charge sur le serveur.
 En intégrant le système de cache de Symfony dans le service `ArticleFetcher`, j'ai pu optimiser les performances de mon application et offrir une meilleure expérience aux utilisateurs.
 
-### Optimisation : Utilisation de la Transaction pour les Insertions en Base de Données
+### Optimisation :
+- Utilisation de la Transaction pour les Insertions en Base de Données
 
 L'utilisation de transactions permet d'optimiser les opérations d'insertion en base de données en regroupant plusieurs requêtes SQL dans une seule transaction. Cela garantit l'intégrité des données et améliore les performances globales de l'application.
 
@@ -265,5 +266,28 @@ $entityManager->beginTransaction();
             $entityManager->rollback();
             return new JsonResponse(['message' => 'Une erreur est survenue lors de l\'enregistrement des articles'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
+```
+### Nettoyage des Articles (Troncature de JSON)
 
+Le nettoyage des articles (troncature de JSON) au niveau de l'optimisation présente plusieurs avantages :
+
+- **Amélioration des performances :** La troncature des descriptions JSON longues réduit la taille des articles, ce qui peut améliorer les performances de chargement et de traitement des données.
+- **Réduction de la consommation de mémoire :** Les descriptions JSON tronquées occupent moins de mémoire, ce qui peut être bénéfique pour les applications traitant un grand nombre d'articles.
+- **Amélioration de la lisibilité :** Les descriptions tronquées sont plus faciles à lire et à parcourir, surtout sur les appareils mobiles ou les écrans plus petits.
+- **Conformité aux limites de taille :** Certaines bases de données ou systèmes peuvent avoir des limites de taille pour les champs de texte. La troncature des descriptions JSON permet de s'assurer qu'elles respectent ces limites.
+- **Cohérence des données :** La troncature des descriptions JSON à une longueur uniforme garantit la cohérence des données et facilite le traitement ultérieur.
+
+En optimisant le nettoyage des articles au niveau de la troncature de JSON, vous pouvez améliorer les performances, réduire la consommation de mémoire, améliorer la lisibilité et garantir la cohérence des données dans votre application.
+
+### Exemple de Code
+
+Cette partie du code nettoie les articles récupérés en tronquant les descriptions JSON qui dépassent 290 caractères.
+
+```php
+// Nettoyage des articles (troncature de la description à 290 caractères)
+foreach ($articles as $key => &$value) {
+    if (is_string($value) && strlen($value) > 290) {
+        $value = substr($value, 0, 290) . '...';
+    }
+}
 

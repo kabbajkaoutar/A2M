@@ -42,8 +42,7 @@ class ApiController extends AbstractController
     #[Route('/api/chargeArticles', name: 'api_chargeArticles', methods: ['GET'])]
     public function chargeArticles(ArticleFetcher $articleFetcher, EntityManagerInterface $entityManager): JsonResponse
     {
-
-        // Define article sources
+        // Définition des sources d'articles
         $sources = [
             "https://www.lemonde.fr/rss/une.xml" => 'fetchRssArticles',
             "https://api.spaceflightnewsapi.net/v3/articles" => 'fetchJsonArticles',
@@ -51,7 +50,8 @@ class ApiController extends AbstractController
             "https://newsapi.org/v2/top-headlines?country=fr&amp;apiKey=API_KEY" => 'fetchJsonArticles',
             '../WS/articles.json' => 'fetchLocalArticles'
         ];
-        // Fetch articles from the RSS feed and JSON API
+
+// Récupération des articles à partir du flux RSS et de l'API JSON
         $articles = [];
         foreach ($sources as $source => $method) {
             try {
@@ -64,28 +64,31 @@ class ApiController extends AbstractController
                 continue; // Skip this source if there's an error
             }
         }
-        // Filter out non-array elements
+
+// Filtrage des éléments non-array
         $cleanedArray = array_filter($articles, function ($item) {
             return is_array($item);
         });
-       // Exclude the string keys from the array
+
+// Exclusion des clés de chaîne de caractères du tableau
         foreach ($cleanedArray as $key => $value) {
             if (is_string($key)) {
                 $extractedValues = $cleanedArray[$key];
                 unset($cleanedArray[$key]);
                 $articles = array_merge($cleanedArray, $extractedValues);
-
             }
         }
-        // **Nettoyage des articles**
+
+// Nettoyage des articles (troncature de la description à 290 caractères)
+
         foreach ($articles as $key => &$value) {
-            if (is_string($value)) {
-                $value = strip_tags($value);
+            if (is_string($value) && strlen($value) > 290) {
+                $value = substr($value, 0, 290) . '...';
             }
         }
 
-        // Convert the array of articles into an array of Article entities
-        // Début de la transaction
+// Conversion du tableau d'articles en un tableau d'entités Article
+// Début de la transaction
         $entityManager->beginTransaction();
 
         try {
@@ -121,10 +124,6 @@ class ApiController extends AbstractController
                 'message' => 'Une erreur est survenue lors de l\'enregistrement des articles',
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-
-
-
 
     }
 
