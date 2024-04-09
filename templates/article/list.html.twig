@@ -35,15 +35,24 @@
                 "processing": true,
                 "serverSide": true,
                 "ordering": false,
-                "searching": false,
+                "searching": true,
                 "ajax": {
                     "url": "{{ path('api_listArticles') }}",
                     "type": "POST",
                     "contentType": "application/json",
-                    "data": function ( d ) {
-                        // Add your POST data here
-
+                    "data": function (d) {
+                        // Add pagination parameters to the request data
+                        d.start = d.start || 0; // Start index of the records to fetch
+                        d.length = d.length || 10; // Number of records per page
+                        d.draw = d.draw || 1; // Draw counter (used by DataTables)
+                        console.log(JSON.stringify(d));
+                        return JSON.stringify(d); // Send data as JSON string
+                    },
+                    "dataSrc": function (json) {
+                        // Process the response data and return the data array
+                        return json.data;
                     }
+
                 },
                 "columns": [
                     { "data": "id" },

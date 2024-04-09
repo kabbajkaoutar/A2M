@@ -20,7 +20,34 @@ class ArticleRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Article::class);
     }
+    // This function will find all articles with pagination and also search by input user in search field
+    public function findPaginated(int $start, int $length, ?string $searchValue = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('a')
+            ->setFirstResult($start)
+            ->setMaxResults($length);
 
+        if ($searchValue !== null && $searchValue !== '') {
+            // Add a search condition to filter articles based on title or other fields
+            $queryBuilder->andWhere(' upper(a.context) LIKE upper(:search)')
+                ->setParameter('search', '%' . $searchValue . '%');
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * Counts the total number of articles.
+     *
+     * @return int  Total number of articles
+     */
+    public function countAll(): int
+    {
+        return $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 
 
 //    /**

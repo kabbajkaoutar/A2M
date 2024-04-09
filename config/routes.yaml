@@ -9,10 +9,10 @@ controllers:
 #    controller: App\Controller\ApiController::chargeArticles
 #api_logout:
 #    path: /api/logout
-#    controller: App\Controller\SecurityController::logout
+#    controller: App\Controller\ApiController::logout
 #    methods: [POST]
 
 #api_login_check:
-#    controller: App\Controller\SecurityController::login
+#    controller: App\Controller\ApiController::login
 #    methods: POST
 #    path: /api/login_check

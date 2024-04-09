@@ -10,10 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Service\ArticleFetcher;
 use App\Repository\ArticleRepository;
 use App\Entity\Article;
-use Symfony\Component\HttpFoundation\Cookie;
 
 
-class SecurityController extends AbstractController
+class ApiController extends AbstractController
 {
     //cette fonction permet de recuperer l'utilisateur connecte
     #[Route('/api/login_check', name: 'api_login_check', methods: ['POST'])]
@@ -36,6 +35,8 @@ class SecurityController extends AbstractController
 
         return $response;
     }
+
+
 
 // cette fonction permet de recuperer les articles depuis differentes ressources
     #[Route('/api/chargeArticles', name: 'api_chargeArticles', methods: ['GET'])]
@@ -78,6 +79,13 @@ class SecurityController extends AbstractController
             }
         }
 
+        // **Nettoyage des articles**
+        foreach ($articles as $key => &$value) {
+            if (is_string($value)) {
+                $value = strip_tags($value);
+            }
+        }
+
 
         // Convert the array of articles into an array of Article entities
         foreach ($articles as $articleData) {
@@ -108,20 +116,34 @@ class SecurityController extends AbstractController
         return $this->render('article/list.html.twig');
     }
     #[Route('/articles', name: 'articles_index', methods: ['GET'])]
-    public function index()
+     public function index()
     {
         return $this->render('article/list.html.twig');
     }
 
 
     #[Route('/api/listArticles', name: 'api_listArticles', methods: ['POST'])]
-    public function listArticles(Request $request, ArticleRepository $articleRepository):JsonResponse
+    public function listArticles(Request $request, ArticleRepository $articleRepository): JsonResponse
     {
-        // Fetch data from the repository
-        $articles = $articleRepository->findAll();
+        // Retrieve pagination parameters from DataTables request
+        $data = json_decode($request->getContent(), true);
+        $draw = $data['draw'] ?? 1 ; // Draw counter (used by DataTables)
+        $start = $data['start'] ?? 0 ; // Draw counter (used by DataTables)
+        $length = $data['length'] ?? 10; // Draw counter (used by DataTables)
+        $searchValue = $data['search']['value'] ?? null; // Search value entered by the user
+
+        // Fetch paginated data from the repository, applying search if provided
+        $articles = $articleRepository->findPaginated($start, $length, $searchValue);
+
 
         // Prepare the response data in DataTables format
-        $data = [];
+        $data = [
+            'draw' => $draw,
+            'recordsTotal' => $articleRepository->countAll(), // Total number of records (without filtering)
+            'recordsFiltered' => $articleRepository->countAll(), // Total number of records after filtering (if needed)
+            'data' => [],
+        ];
+
         foreach ($articles as $article) {
             $data['data'][] = [
                 'id' => $article->getId(),
@@ -129,10 +151,9 @@ class SecurityController extends AbstractController
                 // Add more properties here if needed
             ];
         }
-        // Return the data as a JSON response
+
+        // Return the paginated data as a JSON response
         return new JsonResponse($data);
     }
-
-
 
 }

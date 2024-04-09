@@ -1,16 +1,13 @@
 <?php
 
 namespace App\Entity;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
+
 use ApiPlatform\Metadata\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Patch;
-use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
 
 //Appliquer directives de cache à une ressource Article, en spécifiant une durée de cache (maxAge), une durée de cache partagé (sharedMaxAge), et en marquant le cache comme public.
 #[ApiCache(maxAge: 3600, sharedMaxAge: 3600, public: true)]

@@ -1,16 +1,23 @@
-# A2M
+# A2M (Application Manage Article)
 
 ## Introduction
-A2M (Application Manage Article) est une application Symfony qui gere les articles de différentes sources (API externes, flux RSS, fichiers locaux) puis les stocke en DB. En phase 2, une API REST permet d'y accéder.
-## Prérequis
-Avant de commencer, assurez-vous d'avoir rencontré les exigences suivantes :
+A2M est une application web Symfony qui permet de gérer des articles provenant de différentes sources (flux RSS, API JSON, fichiers locaux) et de les stocker dans une base de données. Une API REST est également disponible pour accéder aux articles.
+## Fonctionnalités
+- Récupération d'articles depuis des flux RSS et des API JSON
+- Stockage des articles dans une base de données
+- Gestion des articles via une API REST
+- Authentification JWT pour sécuriser les requêtes
+- Mise en cache pour améliorer les performances
 
-- [PHP](https://www.php.net/) installé sur votre machine locale.
+## Installation
+### Prérequis
+- [PHP](https://www.php.net/) 8.1 ou supérieur
 - [Composer](https://getcomposer.org/) installé sur votre machine locale.
 - [Git](https://git-scm.com/) installé sur votre machine locale.
 - [Symfony CLI](https://symfony.com/download) installé sur votre machine locale.
+- [API Platform](https://api-platform.com/).
 
-## Pour Commencer
+### Pour Commencer
 
 Pour obtenir une copie locale opérationnelle, suivez ces étapes :
 
@@ -53,36 +60,121 @@ Assurez-vous que tous les prérequis sont satisfaits avant de continuer.
 8. Start the Symfony server:
    ```bash
    symfony server:start
-## Remarque
+#### Remarque
 Dans ce projet, la version LTS (Long Term Support) de Symfony 6.1 a été utilisée. Initialement, le plan était de travailler avec la version 7 de Symfony, mais en raison de complications lors de l'installation avec API Platform, la décision a été prise de revenir à Symfony 6.1 LTS.
 
-### Implémentation de l'authentification pour les sources de données requérant une authentification.
-Pour sécuriser l'accès aux données nécessitant une authentification, des jetons Web JSON (JWT) ont été mis en œuvre. Lorsqu'un utilisateur se connecte, un jeton encodé contenant ses informations est généré.
+#### Agrégation d'articles provenant de diverses sources
 
-Un système d'authentification a été établi pour les requêtes GET et PATCH. Cependant, pour les requêtes DELETE, seuls les administrateurs sont autorisés à les effectuer. Pour les requêtes PATCH, seuls les utilisateurs connectés sont autorisés à les exécuter, comme illustré dans le schéma ci-dessous :
-![img.png](img.png)
-Pour vous authentifier, il vous suffit d'effectuer une requête POST dans la section "Login Check", comme illustré dans le schéma ci-dessous :
+Accès à l'API via une requête GET
 
-[Schéma illustrant la section "Vérification de la connexion"]
-![img_1.png](img_1.png)
+![img_9.png](img_9.png)
 
-Une fois la requête exécutée, si vos identifiants sont valides, un jeton vous sera renvoyé en réponse. 
-![img_2.png](img_2.png)
-Ce jeton contient les détails de votre nom d'utilisateur et de votre rôle. Il sera utilisé pour l'authentification du porteur.
-L'authentification du porteur est une méthode d'authentification qui utilise un jeton pour identifier un utilisateur. Le jeton est généralement envoyé dans l'en-tête de la requête HTTP sous la forme "Authorization: Bearer <jeton>".
-Une fois authentifié, vous aurez le droit d'effectuer les requêtes qui nécessitent une autorisation, telles que les requêtes DELETE et PATCH.
-![img_3.png](img_3.png)
-N'oubliez pas d'inclure le jeton d'authentification dans l'en-tête de la requête avant d'exécuter les requêtes DELETE et PATCH. Si vous ne le faites pas, vous recevrez une réponse d'erreur indiquant que le jeton est invalide![img_4.png](img_4.png)
-Si un jeton d'authentification valide est fourni, les requêtes nécessitant des droits d'accès seront exécutées avec succès.
-![img_6.png](img_6.png)
-Attention seulement l'admin qui a le droit d'executer la requête DELETE 
+Pour accéder à l'API et charger des articles, envoyez une requête GET à l'URL de l'API. L'API renverra une réponse JSON indiquant que les articles ont été chargés avec succès.
+
+![img_10.png](img_10.png)
+
+En effet, la méthode `chargeArticles` récupère des articles à partir de diverses sources, les nettoie, les convertit en entités, les enregistre dans la base de données et renvoie une réponse JSON indiquant le statut de l'opération.
+
+#### API REST pour accéder aux articles stockés
+
+Une fois que les articles ont été chargés et stockés dans la base de données, vous pouvez tester l'API en envoyant une requête GET à l'URL suivante :
+
+Vous pouvez accéder à un Datatable qui affiche les articles stockés dans la base de données, vous permettant d'effectuer diverses opérations telles que la recherche par mot-clé et la pagination.
+
+1. Accédez à l'URL http://127.0.0.1:8000/articles
+
+   ![img_11.png](img_11.png)
+
+La fonction `listArticles` récupère tous les articles de la base de données et les retourne sous forme d'un tableau de données JSON.
+
+#### Modification, suppression et recherche d'articles via l'API
+
+Vous pouvez effectuer des opérations de modification, suppression et recherche d'articles via l'API REST. J'ai intégré les fonctionnalités CRUD d'API Platform en supprimant certaines requêtes telles que POST et en personnalisant quelques méthodes.
+
+Voici ce que vous pouvez faire :
+
+- **Modification d'un article :** Envoyez une requête PATCH à l'URL de l'article spécifique pour mettre à jour ses détails.
+
+- **Suppression d'un article :** Envoyez une requête DELETE à l'URL de l'article spécifique pour le supprimer de la base de données.
+
+- **Recherche d'articles :** Utilisez la fonction de recherche de l'API REST pour trouver des articles spécifiques.
+
+Par exemple :
+
+- Pour mettre à jour un article, envoyez une requête PATCH à l'URL http://127.0.0.1:8000/articles/{id} avec les nouveaux détails de l'article.
+
+- Pour supprimer un article, envoyez une requête DELETE à l'URL http://127.0.0.1:8000/articles/{id} pour supprimer l'article correspondant.
+
+- Pour rechercher des articles, utilisez les paramètres de requête appropriés dans l'URL de l'API REST pour filtrer les résultats selon vos critères.
+
+Ces fonctionnalités vous permettent de gérer efficacement les articles stockés dans la base de données via l'API REST intégrée.
+![img_12.png](img_12.png)
+
+Vous pouvez effectuer des opérations de modification, suppression et recherche d'articles via l'API REST. Pour cela, n'oubliez pas d'ajouter l'annotation `#[ApiResource]` à votre entité `Article` pour la lier à API Platform.
+
+**Ajoutez l'annotation `#[ApiResource]` à votre entité `Article`:**
+
+   ```php
+   // src/Entity/Article.php
+
+   namespace App\Entity;
+
+   use ApiPlatform\Core\Annotation\ApiResource;
+   use Doctrine\ORM\Mapping as ORM;
+
+   #[ApiResource]
+   #[ORM\Entity(repositoryClass: ArticleRepository::class)]
+   class Article
+   {
+       // Vos propriétés et méthodes de classe
+   }
+L'API REST peut être sécurisée en ajoutant des contrôles d'accès et des autorisations. Par exemple, vous pouvez configurer l'OpenAPI context pour spécifier les exigences de sécurité nécessaires à l'accès à l'API.
+
+**Contrôle de sécurité avec OpenAPI Context :**
+
+   Pour assurer la sécurité de votre API, vous pouvez définir des exigences de sécurité dans l'OpenAPI context. Cela permet de spécifier les méthodes d'authentification nécessaires pour accéder à différentes parties de l'API.
+
+   ```php
+   openapiContext: [
+       'security' => [['bearerAuth' => []]]
+   ],
+#### Implémentation de l'authentification
+
+Pour sécuriser l'accès aux données nécessitant une authentification, des jetons Web JSON (JWT) sont utilisés.
+
+- **Authentification**
+
+    - Les utilisateurs peuvent s'authentifier en effectuant une requête POST à la section "Login Check".
+     ![img_1.png](img_1.png)
+    - Un jeton JWT est renvoyé en réponse.
+     ![img_2.png](img_2.png)
+- **Autorisations**
+- Les requêtes GET ne nécessitent pas d'authentification.
+- Les requêtes PATCH nécessitent une authentification utilisateur.
+- Les requêtes DELETE nécessitent une authentification administrateur.
+
 ![img_7.png](img_7.png)
-### Deconnexion
-Le jeton d'authentification est utilisé pour identifier un utilisateur authentifié. Lorsque vous vous déconnectez, le serveur invalide le jeton et supprime toutes les informations d'état associées à votre session.
-si vous lancer encore une fois la requete delete par exemple vous apercevrez que le Beerer a ete vider 
+
+Seules les opérations DELETE et PATCH nécessitent une authentification. Elles sont protégées par le symbole de mot de passe (icône de cadenas) pour indiquer que l'utilisateur ou le client doit fournir des informations d'identification valides pour accéder à ces opérations.
+![img.png](img.png)
+
+Si l'utilisateur ne fournit pas de jeton Bearer valide, un message d'erreur "Token not found" est renvoyé dans la réponse.
+
+![img_4.png](img_4.png)
+
+Si un jeton valide est fourni, la requête est autorisée et l'opération est exécutée.
+
+![img_8.png](img_8.png)
+- **Authentification du porteur**
+
+  Le jeton JWT doit être inclus dans l'en-tête de la requête sous la forme `Authorization: Bearer <jeton>`.
+  ![img_3.png](img_3.png)
+- **Déconnexion**
+
+  Les utilisateurs peuvent se déconnecter en effectuant une requête POST à la section "Logout".
+  ![img_5.png](img_5.png)
 
 
-![img_5.png](img_5.png)
 ### Note
 Pour implémenter JWT, le bundle `lexik/jwt-authentication-bundle` a été utilisé dans Symfony. Assurez-vous que l'extension `ext-sodium` est activée dans votre fichier `php.ini`.
 
